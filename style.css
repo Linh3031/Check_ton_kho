@@ -1,4 +1,4 @@
-/* Version 2.0 - Giao diện nút bấm & Fix lỗi hiển thị Camera */
+/* Version 3.0 - Fix Logo & Layout Camera rộng */
 :root {
     --primary-color: #2563eb;
     --primary-gradient: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
@@ -26,7 +26,7 @@ body {
 
 header {
     background-color: #fff;
-    padding: 15px 20px;
+    padding: 10px 20px; /* Thu nhỏ padding để gọn hơn */
     box-shadow: 0 2px 10px rgba(0,0,0,0.05);
     position: sticky;
     top: 0;
@@ -45,8 +45,15 @@ header {
     gap: 10px;
 }
 
+/* CSS Mới cho Logo hình ảnh */
+.logo-img {
+    height: 40px; /* Chiều cao cố định */
+    width: auto;
+    border-radius: 8px; /* Bo góc nhẹ cho đẹp */
+}
+
 .header-content h1 {
-    font-size: 1.3rem;
+    font-size: 1.2rem;
     color: var(--primary-color);
     font-weight: 800;
 }
@@ -59,32 +66,31 @@ header {
 
 main {
     flex: 1;
-    padding: 20px;
+    padding: 15px;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 15px;
     max-width: 600px;
     margin: 0 auto;
     width: 100%;
 }
 
-/* --- PHẦN NÚT BẤM & TRẠNG THÁI (MỚI) --- */
+/* BUTTON & STATUS */
 .btn-primary {
     width: 100%;
     background: var(--primary-gradient);
     color: white;
     border: none;
-    padding: 18px;
-    font-size: 1.2rem;
+    padding: 15px;
+    font-size: 1.1rem;
     font-weight: 700;
-    border-radius: 15px;
-    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(37, 99, 235, 0.3);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 10px;
-    transition: transform 0.1s;
 }
 
 .btn-primary:active {
@@ -93,20 +99,21 @@ main {
 
 .status-message {
     background: #fff;
-    padding: 15px;
-    border-radius: 12px;
+    padding: 10px;
+    border-radius: 10px;
     text-align: center;
-    font-size: 1rem;
+    font-size: 0.9rem;
     color: var(--text-dark);
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    margin-top: 10px;
 }
 
-/* --- PHẦN CAMERA --- */
+/* CAMERA FIX - Làm cho camera to hơn */
 .scanner-wrapper {
     position: relative;
     background: #000;
     border-radius: 15px;
     overflow: hidden;
+    /* Xóa min-height cũ để nó tự động theo video */
 }
 
 .scanner-wrapper.hidden {
@@ -115,13 +122,12 @@ main {
 
 #reader {
     width: 100%;
-    border-radius: 15px;
+    /* Quan trọng: Bỏ border radius ở đây để video tràn viền */
 }
 
-/* Hack CSS để ẩn các nút thừa của thư viện html5-qrcode */
-#reader__dashboard_section_csr span, 
-#reader__dashboard_section_swaplink {
-    display: none !important;
+#reader video {
+    object-fit: cover; /* Ép video tràn khung */
+    border-radius: 15px 15px 0 0;
 }
 
 .btn-stop {
@@ -129,18 +135,18 @@ main {
     background: #ef4444;
     color: white;
     border: none;
-    padding: 10px;
+    padding: 12px;
     font-weight: bold;
+    font-size: 1rem;
     border-radius: 0 0 15px 15px;
 }
 
-/* --- PHẦN KẾT QUẢ --- */
+/* RESULT CARD */
 .result-card {
     background: var(--card-bg);
     border-radius: 20px;
     padding: 20px;
     box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-    margin-top: 10px;
 }
 
 .result-card.hidden {
@@ -150,7 +156,7 @@ main {
 .row {
     display: flex;
     align-items: baseline;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
     gap: 10px;
 }
 
@@ -158,6 +164,7 @@ main {
     font-weight: 600;
     color: var(--text-gray);
     min-width: 70px;
+    font-size: 0.95rem;
 }
 
 .value {
@@ -171,40 +178,41 @@ main {
     font-weight: 700;
     text-align: right;
     flex: 1;
+    line-height: 1.3;
 }
 
 .divider {
     height: 1px;
     background-color: #e5e7eb;
-    margin: 15px 0;
+    margin: 10px 0;
 }
 
 .total-box {
     background-color: #fffbeb;
     border: 1px solid #fcd34d;
     border-radius: 15px;
-    padding: 20px;
+    padding: 15px;
     text-align: center;
     margin-top: 10px;
 }
 
 .label-small {
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     font-weight: 600;
     color: var(--text-dark);
     text-transform: uppercase;
 }
 
 .total-number {
-    font-size: 4.5rem;
+    font-size: 4rem;
     font-weight: 800;
     color: var(--accent-yellow);
-    line-height: 1.1;
+    line-height: 1;
 }
 
 footer {
     text-align: center;
-    padding: 20px;
+    padding: 15px;
     font-size: 0.8rem;
     color: #9ca3af;
     margin-top: auto;

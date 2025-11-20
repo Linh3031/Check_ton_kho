@@ -1,14 +1,13 @@
-// Version 2.1 - Fix lỗi đen màn hình (Force Back Camera)
+// Version 3.0 - Fix Logo & Tối ưu khung quét Barcode
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSPhZG8XeQtXDs_9KahSED37StkvPTPZUlGNjfv7eBIvqurKoMLSCl3lhzFLS45h96YqP5C3buifgCc/pub?output=csv';
 
 let inventoryData = [];
-let html5QrCode = null; // Đổi tên biến để dùng Class mới
+let html5QrCode = null;
 const beepSound = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-software-interface-start-2574.mp3');
 
-// 1. Tải dữ liệu
 function loadInventoryData() {
     const statusMsg = document.getElementById('status-msg');
-    statusMsg.textContent = "⏳ Đang tải dữ liệu từ kho...";
+    statusMsg.textContent = "⏳ Đang tải dữ liệu...";
     statusMsg.style.color = "orange";
 
     Papa.parse(CSV_URL, {
@@ -16,80 +15,68 @@ function loadInventoryData() {
         header: true,
         complete: function(results) {
             inventoryData = results.data;
-            statusMsg.innerHTML = `✅ Đã tải <b>${inventoryData.length}</b> dòng dữ liệu.<br>Sẵn sàng quét mã.`;
+            statusMsg.innerHTML = `✅ Đã tải <b>${inventoryData.length}</b> sản phẩm.<br>Sẵn sàng.`;
             statusMsg.style.color = "green";
             document.getElementById('btn-start-scan').disabled = false;
         },
         error: function(err) {
-            statusMsg.textContent = "❌ Lỗi kết nối! Vui lòng tải lại trang.";
+            statusMsg.textContent = "❌ Lỗi kết nối!";
             statusMsg.style.color = "red";
         }
     });
 }
 
-// 2. Hàm Bật Camera (Đã nâng cấp để ép mở Camera sau)
 function startCamera() {
-    // Ẩn nút Start, hiện khung Camera
     document.getElementById('scanner-wrapper').classList.remove('hidden');
     document.getElementById('result-card').classList.add('hidden');
-    document.getElementById('status-msg').textContent = "📷 Đang khởi động Camera...";
+    document.getElementById('status-msg').textContent = "📷 Đang mở camera...";
 
-    // Sử dụng Class Html5Qrcode (Cấp thấp hơn nhưng mạnh hơn)
-    // Lưu ý: "reader" là ID của thẻ div trong HTML
     if (!html5QrCode) {
         html5QrCode = new Html5Qrcode("reader");
     }
 
+    // CẤU HÌNH MỚI: QUAN TRỌNG
     const config = { 
-        fps: 10, 
-        qrbox: { width: 250, height: 250 },
-        aspectRatio: 1.0
+        fps: 20, // Tăng tốc độ quét lên 20 khung hình/giây (nhạy hơn)
+        qrbox: { width: 320, height: 150 }, // Hình chữ nhật ngang: Dễ quét Barcode hơn
+        // aspectRatio: 1.0 // Tôi đã bỏ dòng này để camera tự tràn màn hình điện thoại
     };
 
-    // Lệnh quan trọng: facingMode: "environment" nghĩa là Camera Sau
     html5QrCode.start(
         { facingMode: "environment" }, 
         config, 
         onScanSuccess, 
         onScanFailure
     ).catch(err => {
-        // Bắt lỗi nếu không mở được camera
         console.error("Lỗi Camera:", err);
-        document.getElementById('status-msg').textContent = "❌ Không thể mở Camera. Hãy cấp quyền truy cập!";
-        document.getElementById('status-msg').style.color = "red";
-        alert("Lỗi: Trình duyệt không cho phép mở Camera. Vui lòng kiểm tra lại quyền trong Cài đặt.");
-        
-        // Ẩn khung camera đi nếu lỗi
+        document.getElementById('status-msg').textContent = "❌ Lỗi quyền Camera.";
+        alert("Vui lòng cấp quyền Camera!");
         document.getElementById('scanner-wrapper').classList.add('hidden');
     });
 }
 
-// 3. Hàm Dừng Camera
 function stopCamera() {
     if (html5QrCode) {
         html5QrCode.stop().then(() => {
             document.getElementById('scanner-wrapper').classList.add('hidden');
-            document.getElementById('status-msg').innerHTML = `✅ Đã tải <b>${inventoryData.length}</b> sản phẩm. Sẵn sàng.`;
+            document.getElementById('status-msg').innerHTML = `✅ Sẵn sàng quét tiếp.`;
         }).catch(err => {
             console.log("Stop failed ", err);
-            // Nếu lỗi stop (do chưa start xong), cứ ẩn đi
             document.getElementById('scanner-wrapper').classList.add('hidden');
         });
     }
 }
 
-// 4. Xử lý khi quét thành công
 function onScanSuccess(decodedText, decodedResult) {
-    stopCamera(); // Tắt camera ngay
+    stopCamera(); 
     beepSound.play().catch(e => console.log("Audio blocked"));
     lookupProduct(decodedText);
 }
 
 function onScanFailure(error) {
-    // Bỏ qua lỗi quét trượt để đỡ lag
+    // Bỏ qua lỗi
 }
 
-// 5. Hàm tìm kiếm
 function lookupProduct(code) {
     const products = inventoryData.filter(row => 
         row['Mã sản phẩm'] && row['Mã sản phẩm'].trim() === code.trim()
@@ -104,7 +91,7 @@ function lookupProduct(code) {
 
         displayResult(code, productName, totalQuantity);
     } else {
-        alert(`⚠️ Không tìm thấy sản phẩm mã: ${code}`);
+        alert(`⚠️ Không tìm thấy: ${code}`);
         document.getElementById('status-msg').innerHTML = `✅ Sẵn sàng quét mã khác.`;
     }
 }
