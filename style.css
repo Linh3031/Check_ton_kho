@@ -1,0 +1,175 @@
+/* Version 1.1 - Fix syntax error (var, justify-content) */
+:root {
+    --primary-color: #2563eb;
+    --bg-color: #f3f4f6;
+    --card-bg: #ffffff;
+    --text-dark: #1f2937;
+    --text-gray: #6b7280;
+    --accent-yellow: #f59e0b;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+body {
+    background-color: var(--bg-color); /* Đã sửa: thêm var() */
+    color: var(--text-dark);           /* Đã sửa: thêm var() */
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header */
+header {
+    background-color: #fff;
+    padding: 15px 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Đã sửa: thay _ bằng - */
+}
+
+.header-content h1 {
+    font-size: 1.2rem;
+    color: var(--primary-color);
+    font-weight: 700;
+    flex-grow: 1;
+    text-align: center;
+}
+
+.icon, .reload-btn {
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+/* Main Layout */
+main {
+    flex: 1;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 600px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+/* Scanner Section */
+.scanner-container {
+    background: #000;
+    border-radius: 15px;
+    overflow: hidden;
+    position: relative;
+    min-height: 250px;
+}
+
+#reader {
+    width: 100%;
+}
+
+.instruction {
+    text-align: center;
+    color: #fff;
+    padding: 10px;
+    font-size: 0.9rem;
+}
+
+#loading-text {
+    text-align: center;
+    color: yellow; /* Đã sửa: bỏ dấu # thừa */
+    background: rgba(0,0,0,0.7);
+    padding: 5px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 5px;
+    display: none;
+}
+
+/* Result Card */
+.result-card {
+    background: var(--card-bg);
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.result-card.hidden {
+    display: none;
+}
+
+.row {
+    display: flex;
+    align-items: baseline;
+    margin-bottom: 10px;
+    gap: 10px;
+}
+
+.label {
+    font-weight: 600;
+    color: var(--text-dark);
+    min-width: 70px;
+}
+
+.value {
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.product-name {
+    font-size: 1.1rem;
+    color: var(--text-dark);
+    line-height: 1.4;
+    text-align: right;
+    flex: 1;
+}
+
+.divider {
+    height: 1px;
+    background-color: #e5e7eb;
+    margin: 15px 0;
+}
+
+/* Total Box section */
+.total-box {
+    background-color: #fffbeb;
+    border: 1px solid #fcd34d;
+    border-radius: 15px;
+    padding: 20px;
+    text-align: center;
+    margin-top: 10px;
+}
+
+.label-small {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 5px;
+    text-transform: uppercase;
+}
+
+.total-number {
+    font-size: 4rem;
+    font-weight: 800;
+    color: var(--accent-yellow);
+    line-height: 1;
+}
+
+footer {
+    text-align: center;
+    padding: 15px;
+    font-size: 0.8rem;
+    color: #9ca3af;
+}
