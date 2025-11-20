@@ -12,17 +12,28 @@
 
     <header>
         <div class="header-content">
-            <div class="icon">📦</div>
-            <h1>Check Tồn Kho</h1>
+            <div class="logo-area">
+                <span class="icon">📦</span>
+                <h1>Check Tồn Kho</h1>
+            </div>
             <div class="reload-btn" onclick="location.reload()">↻</div>
         </div>
     </header>
 
     <main>
-        <div class="scanner-container">
+        <div class="control-section">
+            <button id="btn-start-scan" class="btn-primary" onclick="startCamera()">
+                <span class="btn-icon">🔍</span> Bắt đầu Quét Mã
+            </button>
+
+            <div id="status-msg" class="status-message">
+                Đang kết nối kho dữ liệu...
+            </div>
+        </div>
+
+        <div id="scanner-wrapper" class="scanner-wrapper hidden">
             <div id="reader"></div>
-            <p class="instruction">Đưa mã vạch vào khung để quét</p>
-            <p id="loading-text">Đang tải dữ liệu kho...</p>
+            <button class="btn-stop" onclick="stopCamera()">❌ Dừng Quét</button>
         </div>
 
         <div id="result-card" class="result-card hidden">
@@ -44,10 +55,7 @@
         </div>
     </main>
 
-    <footer>
-        Design by CodeGenesis Gem
-    </footer>
-
+    <footer>Design by CodeGenesis Gem</footer>
     <script src="app.js"></script>
 </body>
 </html>

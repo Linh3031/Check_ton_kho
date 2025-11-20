@@ -1,6 +1,7 @@
-/* Version 1.1 - Fix syntax error (var, justify-content) */
+/* Version 2.0 - Giao diện nút bấm & Fix lỗi hiển thị Camera */
 :root {
     --primary-color: #2563eb;
+    --primary-gradient: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
     --bg-color: #f3f4f6;
     --card-bg: #ffffff;
     --text-dark: #1f2937;
@@ -12,18 +13,17 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 body {
-    background-color: var(--bg-color); /* Đã sửa: thêm var() */
-    color: var(--text-dark);           /* Đã sửa: thêm var() */
+    background-color: var(--bg-color);
+    color: var(--text-dark);
     height: 100vh;
     display: flex;
     flex-direction: column;
 }
 
-/* Header */
 header {
     background-color: #fff;
     padding: 15px 20px;
@@ -36,23 +36,27 @@ header {
 .header-content {
     display: flex;
     align-items: center;
-    justify-content: space-between; /* Đã sửa: thay _ bằng - */
+    justify-content: space-between;
+}
+
+.logo-area {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 .header-content h1 {
-    font-size: 1.2rem;
+    font-size: 1.3rem;
     color: var(--primary-color);
-    font-weight: 700;
-    flex-grow: 1;
-    text-align: center;
+    font-weight: 800;
 }
 
-.icon, .reload-btn {
+.reload-btn {
     font-size: 1.5rem;
+    color: var(--primary-color);
     cursor: pointer;
 }
 
-/* Main Layout */
 main {
     flex: 1;
     padding: 20px;
@@ -64,46 +68,79 @@ main {
     width: 100%;
 }
 
-/* Scanner Section */
-.scanner-container {
+/* --- PHẦN NÚT BẤM & TRẠNG THÁI (MỚI) --- */
+.btn-primary {
+    width: 100%;
+    background: var(--primary-gradient);
+    color: white;
+    border: none;
+    padding: 18px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: transform 0.1s;
+}
+
+.btn-primary:active {
+    transform: scale(0.98);
+}
+
+.status-message {
+    background: #fff;
+    padding: 15px;
+    border-radius: 12px;
+    text-align: center;
+    font-size: 1rem;
+    color: var(--text-dark);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+/* --- PHẦN CAMERA --- */
+.scanner-wrapper {
+    position: relative;
     background: #000;
     border-radius: 15px;
     overflow: hidden;
-    position: relative;
-    min-height: 250px;
+}
+
+.scanner-wrapper.hidden {
+    display: none !important;
 }
 
 #reader {
     width: 100%;
+    border-radius: 15px;
 }
 
-.instruction {
-    text-align: center;
-    color: #fff;
+/* Hack CSS để ẩn các nút thừa của thư viện html5-qrcode */
+#reader__dashboard_section_csr span, 
+#reader__dashboard_section_swaplink {
+    display: none !important;
+}
+
+.btn-stop {
+    width: 100%;
+    background: #ef4444;
+    color: white;
+    border: none;
     padding: 10px;
-    font-size: 0.9rem;
+    font-weight: bold;
+    border-radius: 0 0 15px 15px;
 }
 
-#loading-text {
-    text-align: center;
-    color: yellow; /* Đã sửa: bỏ dấu # thừa */
-    background: rgba(0,0,0,0.7);
-    padding: 5px;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    border-radius: 5px;
-    display: none;
-}
-
-/* Result Card */
+/* --- PHẦN KẾT QUẢ --- */
 .result-card {
     background: var(--card-bg);
     border-radius: 20px;
     padding: 20px;
     box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-    transition: all 0.3s ease;
+    margin-top: 10px;
 }
 
 .result-card.hidden {
@@ -119,7 +156,7 @@ main {
 
 .label {
     font-weight: 600;
-    color: var(--text-dark);
+    color: var(--text-gray);
     min-width: 70px;
 }
 
@@ -129,9 +166,9 @@ main {
 }
 
 .product-name {
-    font-size: 1.1rem;
-    color: var(--text-dark);
-    line-height: 1.4;
+    font-size: 1.2rem;
+    color: var(--primary-color);
+    font-weight: 700;
     text-align: right;
     flex: 1;
 }
@@ -142,7 +179,6 @@ main {
     margin: 15px 0;
 }
 
-/* Total Box section */
 .total-box {
     background-color: #fffbeb;
     border: 1px solid #fcd34d;
@@ -156,20 +192,20 @@ main {
     font-size: 0.9rem;
     font-weight: 600;
     color: var(--text-dark);
-    margin-bottom: 5px;
     text-transform: uppercase;
 }
 
 .total-number {
-    font-size: 4rem;
+    font-size: 4.5rem;
     font-weight: 800;
     color: var(--accent-yellow);
-    line-height: 1;
+    line-height: 1.1;
 }
 
 footer {
     text-align: center;
-    padding: 15px;
+    padding: 20px;
     font-size: 0.8rem;
     color: #9ca3af;
+    margin-top: auto;
 }
