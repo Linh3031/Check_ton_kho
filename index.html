@@ -6,14 +6,14 @@
     <title>Check Tồn Kho</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
-    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <script src="https://unpkg.com/qr-scanner/qr-scanner.umd.min.js"></script>
 </head>
 <body>
 
     <header>
         <div class="header-content">
             <div class="logo-area">
-                <img src="logo.jpg" alt="Logo ĐMX" class="logo-img">
+                <img src="logo.jpg" alt="Logo" class="logo-img">
                 <h1>Check Tồn Kho</h1>
             </div>
             <div class="reload-btn" onclick="location.reload()">↻</div>
@@ -22,18 +22,20 @@
 
     <main>
         <div class="control-section">
-            <button id="btn-start-scan" class="btn-primary" onclick="startCamera()">
-                <span class="btn-icon">🔍</span> Bắt đầu Quét Mã
+            <button id="btn-start-scan" class="btn-primary" onclick="startScan()">
+                <span class="btn-icon">⚡</span> Bắt đầu Quét QR
             </button>
 
             <div id="status-msg" class="status-message">
-                Đang kết nối kho dữ liệu...
+                Đang kết nối dữ liệu...
             </div>
         </div>
 
         <div id="scanner-wrapper" class="scanner-wrapper hidden">
-            <div id="reader"></div>
-            <button class="btn-stop" onclick="stopCamera()">❌ Dừng Quét</button>
+            <video id="qr-video"></video>
+            <div class="scan-region-highlight"></div>
+            
+            <button class="btn-stop" onclick="stopScan()">❌ Dừng Quét</button>
         </div>
 
         <div id="result-card" class="result-card hidden">
@@ -42,12 +44,10 @@
                 <span class="value" id="res-code">---</span>
             </div>
             <div class="divider"></div>
-            
             <div class="row">
                 <span class="label">📝 Tên SP:</span>
                 <div class="product-name" id="res-name">---</div>
             </div>
-
             <div class="total-box">
                 <div class="label-small">📊 Số Lượng Tổng</div>
                 <div class="total-number" id="res-total">0</div>

@@ -1,10 +1,11 @@
-// Version 3.0 - Fix Logo & Tối ưu khung quét Barcode
+// Version 4.0 - Logic Nimiq QR Scanner (Ưu tiên tốc độ)
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSPhZG8XeQtXDs_9KahSED37StkvPTPZUlGNjfv7eBIvqurKoMLSCl3lhzFLS45h96YqP5C3buifgCc/pub?output=csv';
 
 let inventoryData = [];
-let html5QrCode = null;
+let qrScanner = null;
 const beepSound = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-software-interface-start-2574.mp3');
 
+// 1. Tải dữ liệu
 function loadInventoryData() {
     const statusMsg = document.getElementById('status-msg');
     statusMsg.textContent = "⏳ Đang tải dữ liệu...";
@@ -15,71 +16,77 @@ function loadInventoryData() {
         header: true,
         complete: function(results) {
             inventoryData = results.data;
-            statusMsg.innerHTML = `✅ Đã tải <b>${inventoryData.length}</b> sản phẩm.<br>Sẵn sàng.`;
+            statusMsg.innerHTML = `✅ Đã tải <b>${inventoryData.length}</b> SP. Sẵn sàng quét QR.`;
             statusMsg.style.color = "green";
             document.getElementById('btn-start-scan').disabled = false;
         },
         error: function(err) {
-            statusMsg.textContent = "❌ Lỗi kết nối!";
+            statusMsg.textContent = "❌ Lỗi tải dữ liệu.";
             statusMsg.style.color = "red";
         }
     });
 }
 
-function startCamera() {
+// 2. Bắt đầu quét
+function startScan() {
+    // UI updates
     document.getElementById('scanner-wrapper').classList.remove('hidden');
     document.getElementById('result-card').classList.add('hidden');
-    document.getElementById('status-msg').textContent = "📷 Đang mở camera...";
+    document.getElementById('status-msg').textContent = "📷 Đang mở Camera...";
 
-    if (!html5QrCode) {
-        html5QrCode = new Html5Qrcode("reader");
+    const videoElem = document.getElementById('qr-video');
+
+    if (!qrScanner) {
+        // Khởi tạo Scanner mới
+        qrScanner = new QrScanner(
+            videoElem,
+            result => handleScan(result), // Hàm xử lý khi quét được
+            {
+                returnDetailedScanResult: true,
+                highlightScanRegion: true, // Tô sáng vùng quét
+                highlightCodeOutline: true, // Vẽ viền quanh mã QR tìm thấy
+            }
+        );
     }
 
-    // CẤU HÌNH MỚI: QUAN TRỌNG
-    const config = { 
-        fps: 20, // Tăng tốc độ quét lên 20 khung hình/giây (nhạy hơn)
-        qrbox: { width: 320, height: 150 }, // Hình chữ nhật ngang: Dễ quét Barcode hơn
-        // aspectRatio: 1.0 // Tôi đã bỏ dòng này để camera tự tràn màn hình điện thoại
-    };
-
-    html5QrCode.start(
-        { facingMode: "environment" }, 
-        config, 
-        onScanSuccess, 
-        onScanFailure
-    ).catch(err => {
-        console.error("Lỗi Camera:", err);
-        document.getElementById('status-msg').textContent = "❌ Lỗi quyền Camera.";
-        alert("Vui lòng cấp quyền Camera!");
-        document.getElementById('scanner-wrapper').classList.add('hidden');
+    qrScanner.start().then(() => {
+        document.getElementById('status-msg').textContent = "⚡ Đang quét mã QR...";
+    }).catch(err => {
+        console.error(err);
+        alert("Lỗi Camera: " + err);
+        stopScan();
     });
 }
 
-function stopCamera() {
-    if (html5QrCode) {
-        html5QrCode.stop().then(() => {
-            document.getElementById('scanner-wrapper').classList.add('hidden');
-            document.getElementById('status-msg').innerHTML = `✅ Sẵn sàng quét tiếp.`;
-        }).catch(err => {
-            console.log("Stop failed ", err);
-            document.getElementById('scanner-wrapper').classList.add('hidden');
-        });
+// 3. Xử lý kết quả
+function handleScan(result) {
+    const code = result.data;
+    // console.log("Quét được:", code);
+    
+    // Dừng quét ngay lập tức để tránh quét nhiều lần
+    stopScan(); 
+    
+    beepSound.play().catch(e => {});
+    lookupProduct(code);
+}
+
+// 4. Dừng quét
+function stopScan() {
+    if (qrScanner) {
+        qrScanner.stop();
+        // Không destroy, chỉ stop để lần sau start cho nhanh
     }
+    document.getElementById('scanner-wrapper').classList.add('hidden');
+    document.getElementById('status-msg').innerHTML = `✅ Sẵn sàng quét tiếp.`;
 }
 
-function onScanSuccess(decodedText, decodedResult) {
-    stopCamera(); 
-    beepSound.play().catch(e => console.log("Audio blocked"));
-    lookupProduct(decodedText);
-}
-
-function onScanFailure(error) {
-    // Bỏ qua lỗi
-}
-
+// 5. Tìm kiếm và hiển thị (Logic cũ)
 function lookupProduct(code) {
+    // Vì mã QR có thể chứa text lạ, ta cần trim kỹ
+    const cleanCode = code.trim();
+
     const products = inventoryData.filter(row => 
-        row['Mã sản phẩm'] && row['Mã sản phẩm'].trim() === code.trim()
+        row['Mã sản phẩm'] && row['Mã sản phẩm'].trim() === cleanCode
     );
 
     if (products.length > 0) {
@@ -88,11 +95,9 @@ function lookupProduct(code) {
             let qty = parseInt(row['Số lượng']);
             return sum + (isNaN(qty) ? 0 : qty);
         }, 0);
-
-        displayResult(code, productName, totalQuantity);
+        displayResult(cleanCode, productName, totalQuantity);
     } else {
-        alert(`⚠️ Không tìm thấy: ${code}`);
-        document.getElementById('status-msg').innerHTML = `✅ Sẵn sàng quét mã khác.`;
+        alert(`⚠️ Không tìm thấy SP có mã: ${cleanCode}`);
     }
 }
 
