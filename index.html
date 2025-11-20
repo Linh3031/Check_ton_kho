@@ -1,320 +1,53 @@
 <!DOCTYPE html>
-<html lang="vi" class="h-full">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Check Tồn Kho</title>
-    <!-- Tải Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Tải thư viện PapaParse để đọc file CSV -->
-    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
-    <!-- Tải thư viện html5-qrcode để quét mã -->
-    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-    <!-- Tải thư viện icon Phosphor (giống trong mẫu) -->
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <style>
-        /* Thêm font Inter giống iOS và thiết kế hiện đại */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap');
-        html {
-            font-family: 'Inter', sans-serif;
-        }
-        /* Ẩn trình đọc QR ban đầu */
-        #scanner-container {
-            display: none;
-            width: 100%;
-            max-width: 500px;
-            margin: 1rem auto 0;
-            border-radius: 12px;
-            overflow: hidden;
-            border: 4px solid rgba(255,255,255,0.2);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-        /* Ẩn kết quả ban đầu */
-        #results-card {
-            display: none;
-        }
-        /* Tùy chỉnh cho vùng quét */
-        #scanner-container #html5-qrcode-button-camera-stop {
-            background-color: #EF4444; /* red-500 */
-            color: white;
-            padding: 0.75rem 1rem;
-            border-radius: 8px;
-            margin-top: 1rem;
-            font-weight: 500;
-            cursor: pointer;
-            border: none;
-            width: 100%;
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 </head>
-<body class="bg-gray-100 h-full flex flex-col">
+<body>
 
-    <!-- Header -->
-    <header class="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 flex justify-between items-center shadow-md">
-        <div class="flex items-center space-x-2">
-            <i class="ph-bold ph-circles-four text-3xl"></i>
-            <h1 class="text-xl font-bold">Check Tồn Kho</h1>
+    <header>
+        <div class="header-content">
+            <div class="icon">📦</div>
+            <h1>Check Tồn Kho</h1>
+            <div class="reload-btn" onclick="location.reload()">↻</div>
         </div>
-        <button id="refresh-button" class="p-2 rounded-full hover:bg-blue-700 transition-colors">
-            <i class="ph-bold ph-arrow-clockwise text-2xl"></i>
-        </button>
     </header>
 
-    <!-- Main Content -->
-    <main class="flex-grow p-4 md:p-6 max-w-lg mx-auto w-full">
-        <!-- Nút Quét Mã -->
-        <button id="scan-button" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-xl shadow-lg flex items-center justify-center space-x-3 text-lg transition-all active:scale-95">
-            <i class="ph-bold ph-magnifying-glass text-2xl"></i>
-            <span>Bắt đầu Quét Mã</span>
-        </button>
-
-        <!-- Trình quét mã QR/Barcode -->
-        <div id="scanner-container">
-            <div id="qr-reader" class="w-full"></div>
+    <main>
+        <div class="scanner-container">
+            <div id="reader"></div>
+            <p class="instruction">Đưa mã vạch vào khung để quét</p>
+            <p id="loading-text">Đang tải dữ liệu kho...</p>
         </div>
 
-        <!-- Thông báo Trạng thái -->
-        <div id="message-area" class="text-center text-gray-600 my-4 font-medium"></div>
-
-        <!-- Thẻ Kết quả -->
-        <div id="results-card" class="bg-white rounded-xl shadow-lg p-5 md:p-6 space-y-5 mt-5">
-            <!-- Mã SP -->
-            <div class="flex items-center text-gray-800 space-x-3">
-                <i class="ph-bold ph-tag text-2xl text-orange-500"></i>
-                <div class="flex-grow">
-                    <span class="text-sm text-gray-500">Mã SP:</span>
-                    <p id="result-code" class="font-semibold text-lg">Đang tải...</p>
-                </div>
+        <div id="result-card" class="result-card hidden">
+            <div class="row">
+                <span class="label">🏷️ Mã SP:</span>
+                <span class="value" id="res-code">---</span>
+            </div>
+            <div class="divider"></div>
+            
+            <div class="row">
+                <span class="label">📝 Tên SP:</span>
+                <div class="product-name" id="res-name">---</div>
             </div>
 
-            <!-- Tên SP -->
-            <div class="flex items-center text-gray-800 space-x-3">
-                <i class="ph-bold ph-file-text text-2xl text-blue-500"></i>
-                <div class="flex-grow">
-                    <span class="text-sm text-gray-500">Tên SP:</span>
-                    <p id="result-name" class="font-semibold text-lg">Đang tải...</p>
-                </div>
-            </div>
-
-            <!-- Tổng Số Lượng -->
-            <div class="bg-yellow-50 rounded-lg p-4 text-center border border-yellow-200">
-                <div class="flex items-center justify-center space-x-2 text-yellow-800">
-                    <i class="ph-bold ph-list-numbers text-xl"></i>
-                    <span class="text-base font-semibold">Số Lượng Tổng</span>
-                </div>
-                <p id="result-total" class="text-6xl font-extrabold text-yellow-900 mt-2">0</p>
+            <div class="total-box">
+                <div class="label-small">📊 Số Lượng Tổng</div>
+                <div class="total-number" id="res-total">0</div>
             </div>
         </div>
     </main>
 
-    <!-- Footer -->
-    <footer class="text-center p-4 text-gray-500 text-sm">
-        Design by 3031 (Adapted)
+    <footer>
+        Design by CodeGenesis Gem
     </footer>
 
-    <script>
-        // --- BIẾN TOÀN CỤC ---
-        const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSPhZG8XeQtXDs_9KahSED37StkvPTPZUlGNjfv7eBIvqurKoMLSCl3lhzFLS45h96YqP5C3buifgCc/pub?output=csv';
-        // Sử dụng proxy để tránh lỗi CORS nếu có
-        const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
-        
-        // Map để lưu trữ dữ liệu đã xử lý: { 'Mã SP': { name: 'Tên SP', total: 100 } }
-        let productMap = new Map();
-        let html5QrCode = null;
-
-        // --- DOM Elements ---
-        const scanButton = document.getElementById('scan-button');
-        const refreshButton = document.getElementById('refresh-button');
-        const scannerContainer = document.getElementById('scanner-container');
-        const qrReader = document.getElementById('qr-reader');
-        const messageArea = document.getElementById('message-area');
-        const resultsCard = document.getElementById('results-card');
-        const resultCode = document.getElementById('result-code');
-        const resultName = document.getElementById('result-name');
-        const resultTotal = document.getElementById('result-total');
-
-        // --- HÀM XỬ LÝ ---
-
-        /**
-         * Hiển thị thông báo cho người dùng
-         */
-        function showMessage(message, isError = false) {
-            messageArea.textContent = message;
-            messageArea.className = isError 
-                ? 'text-center text-red-600 my-4 font-medium' 
-                : 'text-center text-gray-600 my-4 font-medium';
-        }
-
-        /**
-         * Tải và xử lý dữ liệu CSV
-         */
-        async function fetchData() {
-            showMessage('Đang tải dữ liệu tồn kho...', false);
-            resultsCard.style.display = 'none'; // Ẩn kết quả cũ
-            scanButton.disabled = true;
-            scanButton.classList.add('opacity-50');
-
-            try {
-                // Thêm cache-busting query string để luôn lấy dữ liệu mới
-                const urlToFetch = `${csvUrl}&t=${new Date().getTime()}`;
-
-                Papa.parse(urlToFetch, {
-                    download: true,
-                    header: true,
-                    skipEmptyLines: true,
-                    complete: function(results) {
-                        processData(results.data);
-                        showMessage('Dữ liệu đã sẵn sàng. Hãy quét mã!', false);
-                        scanButton.disabled = false;
-                        scanButton.classList.remove('opacity-50');
-                    },
-                    error: function(err) {
-                        console.error('Lỗi PapaParse:', err);
-                        showMessage('Tải dữ liệu thất bại. Vui lòng kiểm tra link CSV.', true);
-                        scanButton.disabled = false;
-                        scanButton.classList.remove('opacity-50');
-                    }
-                });
-            } catch (error) {
-                console.error('Lỗi fetch:', error);
-                showMessage('Lỗi mạng hoặc CORS. Nhấn nút tải lại.', true);
-                scanButton.disabled = false;
-                scanButton.classList.remove('opacity-50');
-            }
-        }
-
-        /**
-         * Xử lý dữ liệu thô từ CSV và tổng hợp vào productMap
-         */
-        function processData(data) {
-            productMap.clear(); // Xóa dữ liệu cũ
-            
-            data.forEach(row => {
-                const code = row['Mã sản phẩm'] ? row['Mã sản phẩm'].trim() : null;
-                const name = row['Tên sản phẩm'] ? row['Tên sản phẩm'].trim() : null;
-                const quantity = parseInt(row['số lượng'], 10) || 0;
-
-                if (code && name) {
-                    if (productMap.has(code)) {
-                        // Nếu mã đã tồn tại, cộng dồn số lượng
-                        let existing = productMap.get(code);
-                        existing.total += quantity;
-                        productMap.set(code, existing);
-                    } else {
-                        // Nếu mã mới, thêm vào map
-                        productMap.set(code, { name: name, total: quantity });
-                    }
-                }
-            });
-            
-            console.log(`Đã xử lý ${productMap.size} mã sản phẩm.`);
-        }
-
-        /**
-         * Hiển thị kết quả tìm kiếm
-         */
-        function displayResult(scannedCode) {
-            const result = productMap.get(scannedCode);
-
-            if (result) {
-                resultCode.textContent = scannedCode;
-                resultName.textContent = result.name;
-                resultTotal.textContent = result.total;
-                resultsCard.style.display = 'block';
-                showMessage('Đã tìm thấy sản phẩm!', false);
-            } else {
-                resultCode.textContent = scannedCode;
-                resultName.textContent = '--- Không tìm thấy ---';
-                resultTotal.textContent = '0';
-                resultsCard.style.display = 'block'; // Vẫn hiển thị thẻ để người dùng biết
-                showMessage('Không tìm thấy mã sản phẩm này trong kho.', true);
-            }
-        }
-
-        /**
-         * Bắt đầu quá trình quét
-         */
-        function startScanner() {
-            if (!html5QrCode) {
-                html5QrCode = new Html5Qrcode("qr-reader");
-            }
-
-            scannerContainer.style.display = 'block';
-            scanButton.style.display = 'none';
-            resultsCard.style.display = 'none';
-            showMessage('Di chuyển camera vào mã QR hoặc Barcode...', false);
-
-            const config = { 
-                fps: 10, 
-                qrbox: { width: 250, height: 250 },
-                supportedScanTypes: [
-                    Html5QrcodeScanType.SCAN_TYPE_CAMERA,
-                    Html5QrcodeScanType.SCAN_TYPE_FILE
-                ]
-            };
-
-            html5QrCode.start(
-                { facingMode: "environment" }, // Ưu tiên camera sau
-                config,
-                onScanSuccess,
-                onScanFailure
-            ).catch(err => {
-                console.error("Không thể khởi động camera", err);
-                showMessage("Lỗi camera. Vui lòng cấp quyền và thử lại.", true);
-                stopScanner();
-            });
-        }
-
-        /**
-         * Dừng quá trình quét
-         */
-        function stopScanner() {
-            if (html5QrCode && html5QrCode.isScanning) {
-                html5QrCode.stop().then(() => {
-                    console.log("Đã dừng quét.");
-                }).catch(err => {
-                    console.error("Lỗi khi dừng quét", err);
-                });
-            }
-            scannerContainer.style.display = 'none';
-            scanButton.style.display = 'flex';
-        }
-
-        /**
-         * Xử lý khi quét thành công
-         */
-        function onScanSuccess(decodedText, decodedResult) {
-            console.log(`Quét thành công: ${decodedText}`);
-            stopScanner();
-            displayResult(decodedText);
-        }
-
-        /**
-         * Xử lý khi quét thất bại (bỏ qua, tiếp tục quét)
-         */
-        function onScanFailure(error) {
-            // console.warn(`Lỗi quét: ${error}`);
-            // Không làm gì cả, để trình quét tiếp tục
-        }
-
-
-        // --- CHẠY KHI TẢI TRANG ---
-        document.addEventListener('DOMContentLoaded', () => {
-            // Thêm sự kiện cho các nút
-            scanButton.addEventListener('click', startScanner);
-            refreshButton.addEventListener('click', fetchData);
-
-            // Tải dữ liệu lần đầu tiên
-            fetchData();
-            
-            // Cảnh báo nếu không phải HTTPS (camera cần HTTPS)
-            if (window.location.protocol !== "https" && window.location.hostname !== "localhost") {
-                showMessage("Trang web cần chạy trên HTTPS để dùng camera!", true);
-                scanButton.disabled = true;
-                scanButton.classList.add('opacity-50');
-            }
-        });
-
-    </script>
+    <script src="app.js"></script>
 </body>
 </html>
