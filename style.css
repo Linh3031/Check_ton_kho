@@ -1,84 +1,378 @@
-/* Version 4.0 - Style cho Video QR Scanner */
 :root {
     --primary-color: #2563eb;
+    --primary-dark: #1e40af;
     --primary-gradient: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
     --bg-color: #f3f4f6;
     --card-bg: #ffffff;
     --text-dark: #1f2937;
+    --text-gray: #6b7280;
     --accent-yellow: #f59e0b;
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
-body { background-color: var(--bg-color); color: var(--text-dark); height: 100vh; display: flex; flex-direction: column; }
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
 
-header { background: #fff; padding: 10px 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100; }
-.header-content { display: flex; justify-content: space-between; align-items: center; }
-.logo-area { display: flex; align-items: center; gap: 10px; }
-.logo-img { height: 40px; border-radius: 8px; }
-.header-content h1 { font-size: 1.2rem; color: var(--primary-color); font-weight: 800; }
-.reload-btn { font-size: 1.5rem; color: var(--primary-color); cursor: pointer; }
-
-main { flex: 1; padding: 15px; display: flex; flex-direction: column; gap: 15px; max-width: 600px; margin: 0 auto; width: 100%; }
-
-.btn-primary { width: 100%; background: var(--primary-gradient); color: white; border: none; padding: 15px; font-size: 1.1rem; font-weight: 700; border-radius: 12px; box-shadow: 0 5px 15px rgba(37, 99, 235, 0.3); cursor: pointer; display: flex; justify-content: center; gap: 10px; align-items: center; }
-.status-message { background: #fff; padding: 10px; border-radius: 10px; text-align: center; font-size: 0.9rem; margin-top: 10px; }
-
-/* --- CAMERA STYLE MỚI --- */
-.scanner-wrapper {
-    position: relative;
-    background: #000;
-    border-radius: 15px;
-    overflow: hidden;
-    width: 100%;
-    height: 400px; /* Chiều cao cố định cho khung camera */
+body {
+    background-color: var(--bg-color);
+    color: var(--text-dark);
+    height: 100vh;
     display: flex;
     flex-direction: column;
 }
-.scanner-wrapper.hidden { display: none; }
+
+/* HEADER */
+header {
+    background: #fff;
+    padding: 10px 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo-area {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.logo-img {
+    height: 40px;
+    border-radius: 8px;
+}
+
+.header-content h1 {
+    font-size: 1.2rem;
+    color: var(--primary-color);
+    font-weight: 800;
+}
+
+.settings-btn {
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 5px;
+    transition: transform 0.2s;
+}
+
+.settings-btn:active {
+    transform: rotate(45deg);
+}
+
+/* MAIN LAYOUT */
+main {
+    flex: 1;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    max-width: 600px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+/* BUTTON START */
+.btn-primary {
+    width: 100%;
+    background: var(--primary-gradient);
+    color: white;
+    border: none;
+    padding: 16px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25);
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    align-items: center;
+    transition: transform 0.1s;
+}
+
+.btn-primary:active {
+    transform: scale(0.98);
+}
+
+.status-message {
+    background: #fff;
+    padding: 12px;
+    border-radius: 12px;
+    text-align: center;
+    font-size: 0.95rem;
+    margin-top: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+}
+
+/* CAMERA UI */
+.scanner-wrapper {
+    position: relative;
+    background: #000;
+    border-radius: 20px;
+    overflow: hidden;
+    width: 100%;
+    height: 400px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.scanner-wrapper.hidden {
+    display: none;
+}
 
 #qr-video {
     width: 100%;
     height: 100%;
-    object-fit: cover; /* Đảm bảo video tràn khung */
+    object-fit: cover;
 }
 
-/* Khung ngắm ảo */
 .scan-region-highlight {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 200px;
-    height: 200px;
-    border: 4px solid rgba(255, 255, 0, 0.8); /* Viền vàng */
+    width: 240px;
+    height: 240px;
+    border: 3px solid rgba(255, 255, 0, 0.9);
     border-radius: 20px;
-    box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.5); /* Làm tối vùng xung quanh */
+    box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.6);
     pointer-events: none;
+}
+
+.scan-region-highlight::after {
+    content: "Đặt mã QR vào giữa";
+    position: absolute;
+    bottom: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: white;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.8);
 }
 
 .btn-stop {
     position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    background: #ef4444;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: auto;
+    min-width: 150px;
+    background: rgba(239, 68, 68, 0.9);
     color: white;
     border: none;
-    padding: 15px;
+    padding: 10px 20px;
+    border-radius: 30px;
     font-weight: bold;
     font-size: 1rem;
     z-index: 10;
+    backdrop-filter: blur(4px);
 }
 
-/* --- RESULT CARD --- */
-.result-card { background: var(--card-bg); border-radius: 20px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-.result-card.hidden { display: none; }
-.row { display: flex; align-items: baseline; margin-bottom: 8px; gap: 10px; }
-.label { font-weight: 600; color: #6b7280; min-width: 70px; }
-.value { font-size: 1.1rem; font-weight: 700; }
-.product-name { font-size: 1.2rem; color: var(--primary-color); font-weight: 700; text-align: right; flex: 1; }
-.divider { height: 1px; background: #e5e7eb; margin: 10px 0; }
-.total-box { background: #fffbeb; border: 1px solid #fcd34d; border-radius: 15px; padding: 15px; text-align: center; margin-top: 10px; }
-.label-small { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; }
-.total-number { font-size: 4rem; font-weight: 800; color: var(--accent-yellow); line-height: 1; }
-footer { text-align: center; padding: 15px; font-size: 0.8rem; color: #9ca3af; margin-top: auto; }
+/* RESULT CARD */
+.result-card {
+    background: var(--card-bg);
+    border-radius: 20px;
+    padding: 25px;
+    box-shadow: 0 15px 35px rgba(37, 99, 235, 0.1);
+    border: 1px solid #e0e7ff;
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.result-card.hidden {
+    display: none;
+}
+
+.row {
+    display: flex;
+    align-items: baseline;
+    margin-bottom: 12px;
+    gap: 10px;
+}
+
+.label {
+    font-weight: 600;
+    color: #6b7280;
+    min-width: 80px;
+    font-size: 0.95rem;
+}
+
+.value {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    letter-spacing: 0.5px;
+}
+
+.product-name {
+    font-size: 1.3rem;
+    color: var(--primary-color);
+    font-weight: 800;
+    text-align: right;
+    flex: 1;
+    line-height: 1.4;
+}
+
+.divider {
+    height: 1px;
+    background: linear-gradient(to right, #e5e7eb 0%, #bfdbfe 50%, #e5e7eb 100%);
+    margin: 15px 0;
+}
+
+.total-box {
+    background: #fffbeb;
+    border: 2px solid #fcd34d;
+    border-radius: 18px;
+    padding: 15px;
+    text-align: center;
+    margin-top: 15px;
+}
+
+.label-small {
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #92400e;
+    letter-spacing: 1px;
+    margin-bottom: 5px;
+}
+
+.total-number {
+    font-size: 4.5rem;
+    font-weight: 900;
+    color: var(--accent-yellow);
+    line-height: 1;
+    text-shadow: 2px 2px 0px rgba(253, 230, 138, 0.5);
+}
+
+/* --- BRAND SIGNATURE (MỚI - NỔI BẬT) --- */
+footer {
+    text-align: center;
+    padding: 30px 20px;
+    margin-top: auto;
+}
+
+.brand-badge {
+    display: inline-block;
+    background: #ffffff;
+    padding: 8px 20px;
+    border-radius: 50px;
+    border: 1px solid #bfdbfe;
+    box-shadow: 0 4px 15px rgba(37, 99, 235, 0.1);
+}
+
+.brand-text {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    letter-spacing: 1px;
+}
+
+.brand-highlight {
+    color: var(--accent-yellow);
+    font-weight: 900;
+}
+
+/* MODAL */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.6);
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+}
+
+.modal-overlay.hidden {
+    display: none;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.modal-content {
+    background: white;
+    width: 90%;
+    max-width: 400px;
+    padding: 25px;
+    border-radius: 20px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+    animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes popIn {
+    from { transform: scale(0.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.modal-content h2 {
+    color: var(--primary-color);
+    margin-bottom: 15px;
+    text-align: center;
+    font-weight: 800;
+}
+
+#input-csv-link, #input-admin-pass {
+    width: 100%;
+    padding: 15px;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    font-size: 1rem;
+    margin-bottom: 20px;
+    transition: border 0.2s;
+}
+
+#input-csv-link:focus, #input-admin-pass:focus {
+    border-color: var(--primary-color);
+    outline: none;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-save {
+    flex: 2;
+    background: var(--primary-color);
+    color: white;
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    font-weight: bold;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.btn-close {
+    flex: 1;
+    background: #f3f4f6;
+    color: var(--text-dark);
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    font-weight: bold;
+    cursor: pointer;
+}
